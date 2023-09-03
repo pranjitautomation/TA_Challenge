@@ -4,13 +4,16 @@ from la_news import LATimes
 from src.common import get_workitems
 from src.exception import CustomException
 
+
 workitems = get_workitems()
 news_obj = LATimes(workitems)
 
-def full_process() -> None:
+
+def task() -> None:
     """Runs the whole news fetching process.
     """
     try:
+        news_obj.make_dir()
         news_obj.open_browser()
         news_obj.phrase_search()
         news_obj.get_starting_date()
@@ -29,4 +32,4 @@ def full_process() -> None:
     
 
 if __name__ == '__main__':
-    full_process()
+    task()

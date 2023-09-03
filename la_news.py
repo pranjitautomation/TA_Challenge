@@ -1,6 +1,7 @@
 import os
 import re
 import string
+import shutil
 from datetime import datetime, timedelta
 
 from dateutil import parser
@@ -12,7 +13,7 @@ from selenium.common.exceptions import (ElementClickInterceptedException,
                                         StaleElementReferenceException,
                                         WebDriverException)
 
-from src.common import filter_log, logfile, make_excel
+from src.common import logfile, make_excel
 from src.config import LATimesConfig
 
 
@@ -28,6 +29,10 @@ class LATimes():
         self.excel_file = LATimesConfig.excel_file
         self.image_folder = LATimesConfig.image_folder
         self.logging = logfile()
+
+    def make_dir(self) -> None:
+        "Creates a directory if not present."
+        os.makedirs(self.image_folder, exist_ok=True)
 
     def open_browser(self) -> None:
         """Opens the browser.
@@ -114,6 +119,7 @@ class LATimes():
                         pass
                 
                 else:
+                    topic_click = False
                     self.logging.info(f'{top} topic may not be present in the list of topics or may not be properly enabled at this moment.')
                     
             except (StaleElementReferenceException, ElementNotInteractableException):
@@ -257,6 +263,8 @@ class LATimes():
 
             else:
                 break
+        shutil.make_archive(self.image_folder, 'zip', self.image_folder)
+        shutil.rmtree(self.image_folder)
 
         excel_data = {
             'Title' : title_list,
@@ -271,7 +279,6 @@ class LATimes():
         self.logging.info('Excel creation is completed.')
         
         self.logging.info('Full process is completed.')
-        filter_log()
         
     @retry((AssertionError, ElementClickInterceptedException, WebDriverException), 2, 3)
     def next_page(self) -> None:

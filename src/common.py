@@ -1,5 +1,4 @@
 import logging
-import os
 
 from RPA.Excel.Files import Files
 from RPA.Robocorp.WorkItems import WorkItems
@@ -23,27 +22,18 @@ def make_excel(data: dict) -> None:
 def logfile() -> None:
     """Creates the log file.
     """
-    dir_path = LATimesConfig.image_folder
-    os.makedirs(dir_path, exist_ok=True)
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
 
-    logging.basicConfig(
-    filename=LATimesConfig.logs_path,
-    format="[ %(asctime)s ] %(lineno)d %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-    )
-    return logging
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
 
-def filter_log() -> None:
-    """Filters the log file and deletes the unnecessary auto generated logs produced by Robocorp.
-    """
-    file_path = LATimesConfig.logs_path
-    texts_to_remove = ["WDM - INFO", "RobotFramework - INFO", "RPA.HTTP - INFO", 'Chrome', 'Firefox', 'ChromiumEdge']
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_handler.setFormatter(formatter)
 
-    with open(file_path, 'r') as file:
-        lines = [line for line in file if all(text not in line for text in texts_to_remove)]
+    logger.addHandler(console_handler)
 
-    with open(file_path, 'w') as file:
-        file.writelines(lines)
+    return logger
         
 def get_workitems() -> dict:
     """

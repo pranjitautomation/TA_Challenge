@@ -1,8 +1,5 @@
-import sys
-
 from la_news import LATimes
 from src.common import get_workitems
-from src.exception import CustomException
 
 
 workitems = get_workitems()
@@ -28,7 +25,7 @@ def task() -> None:
             news_obj.get_text()
 
     except Exception as e:
-        raise CustomException(e, sys)
+        raise e
     
 
 if __name__ == '__main__':

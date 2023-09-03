@@ -8,6 +8,7 @@ from dateutil import parser
 from retry import retry
 from RPA.Browser.Selenium import Selenium
 from RPA.HTTP import HTTP
+from SeleniumLibrary.errors import ElementNotFound
 from selenium.common.exceptions import (ElementClickInterceptedException,
                                         ElementNotInteractableException,
                                         StaleElementReferenceException,
@@ -99,11 +100,12 @@ class LATimes():
            topic : List of the required topics.
         """
         self.logging.info('Beginning the process of selecting topics.')
+
         topic_click = True
         for top in topic:
             top = top.strip().title()
             try:
-                self.browser.wait_until_element_is_visible('//p[text()="Topics"]', 20)
+                self.browser.wait_until_element_is_visible('//p[text()="Topics"]', 60)
                 try:
                     self.browser.wait_until_element_is_enabled(f'//span[text()="{top}"]', 10)
                 except AssertionError:
@@ -122,7 +124,7 @@ class LATimes():
                     topic_click = False
                     self.logging.info(f'{top} topic may not be present in the list of topics or may not be properly enabled at this moment.')
                     
-            except (StaleElementReferenceException, ElementNotInteractableException):
+            except (AssertionError, StaleElementReferenceException, ElementNotInteractableException):
                 self.logging.info(f'{top} topic is not properly clicked.')
                 topic_click = False
 
@@ -226,9 +228,20 @@ class LATimes():
                 on_date = self.convert_to_datetime(date_text)
 
                 if on_date >= start_date:
-                    title_text = self.browser.get_text(f'(//h3[@class="promo-title"]){[i]}')
-                    description_text = self.browser.get_text(f'(//p[@class="promo-description"]){[i]}')
-                    img_src = self.browser.get_element_attribute(f'(//img[@class="image"]){[i]}', 'src')
+                    try:
+                        title_text = self.browser.get_text(f'(//h3[@class="promo-title"]){[i]}')
+                    except ElementNotFound:
+                        title_text = ''
+                    
+                    try:
+                        description_text = self.browser.get_text(f'(//p[@class="promo-description"]){[i]}')
+                    except ElementNotFound:
+                        description_text = ''
+                    
+                    try:
+                        img_src = self.browser.get_element_attribute(f'(//img[@class="image"]){[i]}', 'src')
+                    except ElementNotFound:
+                        img_src = ''
                     
                     count_in_title = self.count_phrase(title_text)
                     count_in_des = self.count_phrase(description_text)
@@ -241,11 +254,14 @@ class LATimes():
                         money_present = True
                     else:
                         money_present = False
-                        
-                    ele_no = len(date_list) + 1
-                    image_filename = f'image {ele_no}.png'
-                    image_filepath = os.path.join(self.image_folder, image_filename)
-                    self.download_image(img_src, image_filepath)
+                    
+                    if len(img_src)>0:   
+                        ele_no = len(date_list) + 1
+                        image_filename = f'image {ele_no}.png'
+                        image_filepath = os.path.join(self.image_folder, image_filename)
+                        self.download_image(img_src, image_filepath)
+                    else:
+                        image_filename = ''
 
                     date_list.append(date_text)
                     title_list.append(title_text)
@@ -300,7 +316,7 @@ class LATimes():
         Returns:
             bool: Returns true if money is present; otherwise, returns false.
         """
-        match_exp = r'(?:\$\d+(?:,\d{3})*(?:\.\d+)?|\b\d+(?:,\d{3})*(?:\.\d+)?\s*(?:dollars|USD)?\b)'
+        match_exp = r'(?:\$\d+(?:,\d{3})*(?:\.\d+)?)|(?:\d+(?:,\d{3})*(?:\.\d+)?)\s*(?:dollars|USD)\b'
         money_present = re.findall(match_exp, text)
         
         if len(money_present)>0:
@@ -328,8 +344,4 @@ class LATimes():
            filename : Name of the file where the image has been saved.
         """
         self.http.download(image_src, filename)
-    
-
-    
-    
     

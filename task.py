@@ -6,6 +6,7 @@ workitems = get_workitems()
 news_obj = LATimes(workitems)
 
 
+# Final Task
 def task() -> None:
     """Runs the whole news fetching process.
     """

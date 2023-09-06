@@ -39,8 +39,7 @@ class LATimes():
         """Opens the browser.
         """
         self.logging.info('Initialization of the process.')
-        self.browser.open_available_browser('https://www.latimes.com')
-        self.browser.maximize_browser_window()
+        self.browser.open_available_browser('https://www.latimes.com', maximized=True)
         self.browser.wait_until_element_is_visible('//button[@data-element="search-button"]')
         self.browser.click_element('//button[@data-element="search-button"]')
 
@@ -82,7 +81,7 @@ class LATimes():
                                 search_provided = False
         
         if not search_provided:
-            self.logging.info('Search phrase is not properly provided.')
+            self.logging.info('Topics are not properly provided.')
                    
         return search_provided   
          
@@ -99,7 +98,7 @@ class LATimes():
         Args:
            topic : List of the required topics.
         """
-        self.logging.info('Beginning the process of selecting topics.')
+        self.logging.info('Beginning the process of topic selection.')
 
         topic_click = True
         for top in topic:
@@ -114,6 +113,7 @@ class LATimes():
                 if self.browser.is_element_enabled(f'//span[text()="{top}"]'):
                     self.browser.scroll_element_into_view(f'//span[text()="{top}"]')
                     self.browser.click_element(f'//span[text()="{top}"]//preceding-sibling::input')
+                    self.logging.info(f'{top} topic is properly clicked.')
                     
                     try:
                         self.browser.wait_until_element_is_visible('//div[@class="search-results-module-no-results"]', 3)
@@ -122,10 +122,12 @@ class LATimes():
                 
                 else:
                     topic_click = False
-                    self.logging.info(f'{top} topic may not be present in the list of topics or may not be properly enabled at this moment.')
+                    self.logging.info(
+                        f'{top} topic may not be present in the list of topics or may not be properly enabled at this moment.'
+                        )
                     
             except (AssertionError, StaleElementReferenceException, ElementNotInteractableException):
-                self.logging.info(f'{top} topic is not properly clicked.')
+                self.logging.info(f'{top} topic is not clicked.')
                 topic_click = False
 
         if topic_click:

@@ -3,7 +3,7 @@ name: Upload to Control Room
 on:
   push:
     branches:
-      - test
+      - master
 
 jobs:
   upload-to-control-room:

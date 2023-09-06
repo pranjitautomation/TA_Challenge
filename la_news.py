@@ -84,7 +84,7 @@ class LATimes():
         if not search_provided:
             self.logging.info('Search phrase is not properly provided.')
                    
-        return search_provided    
+        return search_provided   
          
     def sort_by(self) -> None:
         """Sort the news by the latest date.
@@ -218,7 +218,20 @@ class LATimes():
         count_phrase_list = []
         money_present_list = []
 
-        while True:
+        try:
+            self.browser.wait_until_element_is_enabled('//div[@class="search-results-module-page-counts"]', 10)
+        except AssertionError:
+            pass
+        
+        if self.browser.is_element_enabled('//div[@class="search-results-module-page-counts"]'):
+            pages_text = self.browser.get_text('//div[@class="search-results-module-page-counts"]')
+            total_page = pages_text.split('of')[-1].replace(',', '').strip()
+        else:
+            total_page = 1
+        
+        current_page = 1
+        while current_page <= int(total_page):
+            self.logging.info(f'Processing Page no: {current_page}')
             date_elements = self.browser.get_webelements('//p[@class="promo-timestamp"]')
             last_date_text = self.browser.get_text(date_elements[-1])
             last_on_date = self.convert_to_datetime(last_date_text)
@@ -273,6 +286,7 @@ class LATimes():
             if last_on_date >= start_date:
                 try:
                     self.next_page()
+                    current_page = current_page + 1
                 except (AssertionError, ElementClickInterceptedException):
                     self.logging.info('The process of news fetching is completed.')
                     break
@@ -319,7 +333,7 @@ class LATimes():
         match_exp = r'(?:\$\d+(?:,\d{3})*(?:\.\d+)?)|(?:\d+(?:,\d{3})*(?:\.\d+)?)\s*(?:dollars|USD)\b'
         money_present = re.findall(match_exp, text)
         
-        if len(money_present)>0:
+        if len(money_present) > 0:
             return True
         else:
             return False

@@ -34,7 +34,7 @@ def logfile() -> None:
     logger.addHandler(console_handler)
 
     return logger
-        
+
 def get_workitems() -> dict:
     """
     Gets the inputs for the whole process.

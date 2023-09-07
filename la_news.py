@@ -32,7 +32,8 @@ class LATimes():
         self.logging = logfile()
 
     def make_dir(self) -> None:
-        "Creates a directory if not present."
+        """Creates a directory if not present.
+        """
         os.makedirs(self.image_folder, exist_ok=True)
 
     def open_browser(self) -> None:
